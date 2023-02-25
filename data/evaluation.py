@@ -1,12 +1,11 @@
 import numpy as np
-from munkres import Munkres, print_matrix
-from sklearn.metrics.cluster import normalized_mutual_info_score as nmi_score
-from sklearn.metrics import adjusted_rand_score as ari_score
-from scipy.optimize import linear_sum_assignment as linear
+from munkres import Munkres
 from sklearn import metrics
+from sklearn.metrics import adjusted_rand_score as ari_score
+from sklearn.metrics.cluster import normalized_mutual_info_score as nmi_score
 
 
-def cluster_acc(y_true, y_pred):
+def cluster_acc(y_true, y_pred, shutup=False):
     y_true = y_true - np.min(y_true)
 
     l1 = list(set(y_true))
@@ -28,7 +27,8 @@ def cluster_acc(y_true, y_pred):
     numclass2 = len(l2)
 
     if numclass1 != numclass2:
-        print('error')
+        if not shutup:
+            print('accuracy error')
         return
 
     cost = np.zeros((numclass1, numclass2), dtype=int)
@@ -63,10 +63,15 @@ def cluster_acc(y_true, y_pred):
     return acc, f1_macro
 
 
-def eva(y_true, y_pred, epoch=0):
-    acc, f1 = cluster_acc(y_true, y_pred)
+def eva(y_true, y_pred, epoch=0, shutup=False):
+    res = cluster_acc(y_true, y_pred, shutup=shutup)
+    if res is None:
+        acc, f1 = 0, 0
+    else:
+        acc, f1 = res
     nmi = nmi_score(y_true, y_pred, average_method='arithmetic')
     ari = ari_score(y_true, y_pred)
-    print(epoch, ':acc {:.4f}'.format(acc), ', nmi {:.4f}'.format(nmi), ', ari {:.4f}'.format(ari),
-            ', f1 {:.4f}'.format(f1))
-
+    if not shutup:
+        print(epoch, ':acc {:.4f}'.format(acc), ', nmi {:.4f}'.format(nmi), ', ari {:.4f}'.format(ari),
+              ', f1 {:.4f}'.format(f1))
+    return acc, nmi, ari, f1

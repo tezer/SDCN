@@ -1,17 +1,17 @@
 import numpy as np
-import h5py
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.nn.parameter import Parameter
-from torch.utils.data import DataLoader
-from torch.optim import Adam, SGD
-from torch.nn import Linear
-from torch.utils.data import Dataset
 from sklearn.cluster import KMeans
+from torch.nn import Linear
+from torch.optim import Adam
+from torch.utils.data import DataLoader
+from torch.utils.data import Dataset
+
 from evaluation import eva
 
-#torch.cuda.set_device(3)
+# torch.cuda.set_device(3)
+dataset_name = 'acm'
 
 
 class AE(nn.Module):
@@ -52,7 +52,7 @@ class LoadDataset(Dataset):
 
     def __getitem__(self, idx):
         return torch.from_numpy(np.array(self.x[idx])).float(), \
-               torch.from_numpy(np.array(idx))
+            torch.from_numpy(np.array(idx))
 
 
 def adjust_learning_rate(optimizer, epoch):
@@ -81,24 +81,26 @@ def pretrain_ae(model, dataset, y):
             x = torch.Tensor(dataset.x).cuda().float()
             x_bar, z = model(x)
             loss = F.mse_loss(x_bar, x)
-            print('{} loss: {}'.format(epoch, loss))           
+            print('{} loss: {}'.format(epoch, loss))
             kmeans = KMeans(n_clusters=4, n_init=20).fit(z.data.cpu().numpy())
             eva(y, kmeans.labels_, epoch)
 
-        torch.save(model.state_dict(), 'dblp1.pkl')
+        torch.save(model.state_dict(), dataset_name + '.pkl')
+
+
+x = np.loadtxt(dataset_name + '.txt', dtype=float)
+y = np.loadtxt(dataset_name + '_label.txt', dtype=int)
+nb_input = x.shape[1]
 
 model = AE(
-        n_enc_1=500,
-        n_enc_2=500,
-        n_enc_3=2000,
-        n_dec_1=2000,
-        n_dec_2=500,
-        n_dec_3=500,
-        n_input=334,
-        n_z=10,).cuda()
-
-x = np.loadtxt('dblp.txt', dtype=float)
-y = np.loadtxt('dblp_label.txt', dtype=int)
+    n_enc_1=500,
+    n_enc_2=500,
+    n_enc_3=2000,
+    n_dec_1=2000,
+    n_dec_2=500,
+    n_dec_3=500,
+    n_input=nb_input,
+    n_z=10, ).cuda()
 
 dataset = LoadDataset(x)
 pretrain_ae(model, dataset, y)

@@ -1,21 +1,18 @@
 from __future__ import print_function, division
+
 import argparse
-import random
-import numpy as np
-from sklearn.cluster import KMeans
-from sklearn.metrics.cluster import normalized_mutual_info_score as nmi_score
-from sklearn.metrics import adjusted_rand_score as ari_score
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from sklearn.cluster import KMeans
+from torch.nn import Linear
 from torch.nn.parameter import Parameter
 from torch.optim import Adam
-from torch.utils.data import DataLoader
-from torch.nn import Linear
-from utils import load_data, load_graph
+
 from GNN import GNNLayer
 from evaluation import eva
-from collections import Counter
+from utils import load_data, load_graph
 
 
 # torch.cuda.set_device(1)
@@ -166,7 +163,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='train',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--name', type=str, default='reut')
+    parser.add_argument('--name', type=str, default='acm')
     parser.add_argument('--k', type=int, default=3)
     parser.add_argument('--lr', type=float, default=1e-3)
     parser.add_argument('--n_clusters', default=3, type=int)
