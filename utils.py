@@ -1,6 +1,5 @@
 import numpy as np
 import scipy.sparse as sp
-import h5py
 import torch
 from torch.utils.data import Dataset
 
